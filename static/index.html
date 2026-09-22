@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BiciAgenda Villa Crespo — IA + Ecobicis + Cultura</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- PANEL LATERAL DE CONTROL -->
+    <aside class="sidebar">
+      <header class="sidebar-header">
+        <div class="brand">
+          <i class="fa-solid fa-bicycle brand-icon"></i>
+          <div>
+            <h1>BiciAgenda</h1>
+            <span class="badge-district">Villa Crespo • CABA</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- WIDGET CLIMÁTICO Y CALOR -->
+      <section class="card weather-card" id="weatherCard">
+        <div class="weather-main">
+          <div class="weather-temp">
+            <span id="wTemp">--</span>°C
+            <small id="wFeel">Sensación --°C</small>
+          </div>
+          <div class="weather-status" id="wStatus">
+            <i class="fa-solid fa-cloud-sun"></i>
+            <span>Cargando clima...</span>
+          </div>
+        </div>
+        <div class="weather-alert" id="wTimeLimit">
+          <i class="fa-solid fa-clock"></i>
+          <span id="wLimitText">Calculando horario ideal...</span>
+        </div>
+        <div class="weather-shade-tip" id="wShadeTip">
+          <i class="fa-solid fa-tree"></i>
+          <span id="wTipText">Consultando sombras y arbolado...</span>
+        </div>
+      </section>
+
+      <!-- FORMULARIO DE ITINERARIO -->
+      <form id="routeForm" class="route-form">
+        
+        <!-- ORIGEN -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-location-dot"></i> Estación Ecobici de Partida</label>
+          <select id="originStation" class="form-control" required>
+            <option value="">Cargando estaciones de Villa Crespo...</option>
+          </select>
+          <small class="help-text" id="originStatusText">Disponibilidad en tiempo real</small>
+        </div>
+
+        <!-- TIEMPO DE IDA -->
+        <div class="form-group">
+          <div class="label-with-val">
+            <label><i class="fa-solid fa-arrow-right"></i> Tiempo de Ida</label>
+            <span id="valTiempoIda" class="val-badge">15 min</span>
+          </div>
+          <input type="range" id="tiempoIda" min="5" max="35" step="5" value="15" class="slider">
+          <div class="slider-ticks"><span>5m</span><span>15m</span><span>25m</span><span>35m</span></div>
+        </div>
+
+        <!-- PARADAS INTERMEDIAS -->
+        <div class="form-group stops-group">
+          <div class="stops-header">
+            <label><i class="fa-solid fa-layer-group"></i> Paradas Intermedias</label>
+            <button type="button" class="btn-sm" id="btnAddStop">
+              <i class="fa-solid fa-plus"></i> Agregar Parada
+            </button>
+          </div>
+          <div id="stopsContainer" class="stops-container">
+            <!-- Paradas dinámicas -->
+          </div>
+        </div>
+
+        <!-- TIEMPO DE VUELTA -->
+        <div class="form-group">
+          <div class="label-with-val">
+            <label><i class="fa-solid fa-arrow-rotate-left"></i> Tiempo de Vuelta</label>
+            <span id="valTiempoVuelta" class="val-badge">15 min</span>
+          </div>
+          <input type="range" id="tiempoVuelta" min="5" max="35" step="5" value="15" class="slider">
+          <div class="slider-ticks"><span>5m</span><span>15m</span><span>25m</span><span>35m</span></div>
+        </div>
+
+        <!-- GROQ API KEY (OPCIONAL) -->
+        <div class="form-group groq-accordion">
+          <details>
+            <summary><i class="fa-solid fa-microchip"></i> Configurar Groq API (Llama-3)</summary>
+            <div class="groq-inputs">
+              <input type="password" id="groqKey" placeholder="gsk_..." class="form-control-sm">
+              <small>Opcional: Si lo dejas vacío, usa el motor contextual del servidor.</small>
+            </div>
+          </details>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btnSubmit">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Planificar con IA
+        </button>
+      </form>
+
+      <!-- RESULTADO SÍNTESIS IA -->
+      <section id="aiResultCard" class="card ai-card" style="display: none;">
+        <div class="ai-card-header">
+          <span class="badge-ai" id="aiBadge"><i class="fa-solid fa-bolt"></i> Groq Llama-3</span>
+          <button class="btn-close" id="btnCloseResult">&times;</button>
+        </div>
+        <div class="ai-content" id="aiContent"></div>
+        <div class="route-metrics" id="routeMetrics"></div>
+      </section>
+
+      <footer class="sidebar-footer">
+        Cátedra K576 — Sistemas Generativos e IA para Diseño • UDeSA
+      </footer>
+    </aside>
+
+    <!-- MAPA INTERACTIVO -->
+    <main class="map-container">
+      <div id="map"></div>
+      <div class="map-overlay-legend">
+        <span class="legend-item"><span class="dot dot-bike"></span> Ciclovías</span>
+        <span class="legend-item"><span class="dot dot-ecobici"></span> Ecobicis</span>
+        <span class="legend-item"><span class="dot dot-culture"></span> Cultura</span>
+        <span class="legend-item"><span class="dot dot-cafe"></span> Café</span>
+        <span class="legend-item"><span class="dot dot-shade"></span> Sombra/Plaza</span>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL DE SELECCIÓN DE PARADAS -->
+  <div id="stopModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Elegí una Parada en Villa Crespo</h3>
+        <button class="modal-close" id="btnModalClose">&times;</button>
+      </div>
+      <div class="modal-filter">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="cafe">Cafés</button>
+        <button class="filter-btn" data-filter="cultura">Cultura</button>
+        <button class="filter-btn" data-filter="sombra">Plazas con Sombra</button>
+      </div>
+      <div class="modal-places-list" id="modalPlacesList"></div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS & App JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

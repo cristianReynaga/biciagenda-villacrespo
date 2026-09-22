@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  biciagenda:
+    build: .
+    container_name: biciagenda_villacrespo
+    restart: unless-stopped
+    ports:
+      - "8095:8095"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+    volumes:
+      - ./data:/app/data
