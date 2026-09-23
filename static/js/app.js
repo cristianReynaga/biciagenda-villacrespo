@@ -31,9 +31,9 @@ function initMap() {
 
   L.control.zoom({ position: "topright" }).addTo(map);
 
-  // CartoDB Dark Matter / Positron
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a> & OpenStreetMap',
+  // OpenStreetMap público (sin API Key ni marcas de agua)
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
   }).addTo(map);
 }
