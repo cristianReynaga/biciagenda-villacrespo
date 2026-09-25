@@ -44,7 +44,10 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-La aplicación quedará disponible en: `http://localhost:8095` (o en tu servidor local: `http://192.168.1.100:8095`).
+La aplicación quedará disponible en:
+* **Entorno local / LAN:** `http://localhost:8095` o `http://192.168.1.100:8095`
+* **VPS Pública (HTTPS / SSL):** `https://dev.cristianreynaga.com/bici/`
+* **VPS Pública (Directo IP):** `http://200.58.107.114/bici/`
 
 ---
 
