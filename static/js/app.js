@@ -87,7 +87,7 @@ function setupEventListeners() {
 // 1. CARGA DE CLIMA Y HORARIOS
 async function loadWeather() {
   try {
-    const res = await fetch("/api/clima");
+    const res = await fetch("api/clima");
     const data = await res.json();
 
     document.getElementById("wTemp").textContent = Math.round(data.temperatura);
@@ -106,7 +106,7 @@ async function loadWeather() {
 // 2. CARGA DE CICLOVÍAS EN MAPA
 async function loadCiclovias() {
   try {
-    const res = await fetch("/api/ciclovias");
+    const res = await fetch("api/ciclovias");
     const geojsonData = await res.json();
 
     cicloviasLayer = L.geoJSON(geojsonData, {
@@ -128,7 +128,7 @@ async function loadCiclovias() {
 // 3. CARGA DE ESTACIONES ECOBICI
 async function loadStations() {
   try {
-    const res = await fetch("/api/ecobicis");
+    const res = await fetch("api/ecobicis");
     stationsData = await res.json();
 
     const select = document.getElementById("originStation");
@@ -178,7 +178,7 @@ async function loadStations() {
 // 4. CARGA DE LUGARES CULTURALES / CAFÉS
 async function loadPlaces() {
   try {
-    const res = await fetch("/api/lugares");
+    const res = await fetch("api/lugares");
     placesData = await res.json();
 
     placesData.forEach(p => {
@@ -316,7 +316,7 @@ async function handleFormSubmit(e) {
   };
 
   try {
-    const res = await fetch("/api/planificar", {
+    const res = await fetch("api/planificar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: jsonStringify(payload)
